@@ -50,6 +50,7 @@ void setup() {
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
   lcd.print("Hello world");
+  Scheduler_Init();
 }
 
 void sendData(int x, int y, bool switch_clicked){
@@ -63,6 +64,10 @@ void sendData(int x, int y, bool switch_clicked){
     Serial1.print(0);
   }  
   Serial1.write('\n');
+}
+
+int read_photo(){
+  return analogRead(photocell_pin);
 }
 
 void print_to_lcd(int x, int y, int photosensor, bool switch_clicked){
