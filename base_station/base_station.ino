@@ -2,10 +2,11 @@ int led = 13;           // the PWM pin the LED is attached to
 int pwm = 0;    // how bright the LED is
 int fade_amount = 0;    // how many points to fade the LED by
 
-int analog_vy_pin = A0;
-int analog_vx_pin = A1;
+int analog_vy_pin = A1;
+int analog_vx_pin = A0;
 int switch_pin = 53;
 int laser_pin = 13;
+int photocell_pin = A2;
 
 int vy = 0;
 int vx = 0;
@@ -16,6 +17,7 @@ int num_switch_zeros = 0;
 bool switch_clicked = false;
 double alpha = 0.2;
 int diff;
+int photocell_value;
 
 int MID_VAL = 520;
 int NOISE_BAND = 5;
@@ -59,11 +61,14 @@ void loop() {
   vy = analogRead(analog_vy_pin);
   vx = analogRead(analog_vx_pin);
   switch_value = digitalRead(switch_pin);
+  photocell_value = analogRead(photocell_pin);
 
   Serial.print(previous_x);
   Serial.print(" ");
   Serial.print(vx);
   Serial.print(" ");
+  Serial.print("Photocell value: ");
+  Serial.print(photocell_value);
   
   if(previous_x != -1){
     vx = exponential(vx, previous_x);
