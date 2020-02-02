@@ -17,7 +17,7 @@ int previous_y = -1;
 int switch_value = 0;
 int num_switch_zeros = 0;
 bool switch_clicked = false;
-double alpha = 0.2;
+double alpha = 0.1;
 int diff;
 int photocell_value;
 
@@ -72,18 +72,18 @@ void loop() {
   Serial.print("Photocell value: ");
   Serial.print(photocell_value);
   
-  if(previous_x != -1){
-    vx = exponential(vx, previous_x);
-    vy = exponential(vy, previous_y);
-  }
-
-  if(vx >= MID_VAL - NOISE_BAND && vx <= MID_VAL + NOISE_BAND){
-    vx = MID_VAL;
-  }
-
-  if(vy >= MID_VAL - NOISE_BAND && vy <= MID_VAL - NOISE_BAND){
-    vy = MID_VAL;
-  }
+//  if(previous_x != -1){
+//    vx = exponential(vx, previous_x);
+//    vy = exponential(vy, previous_y);
+//  }
+//
+//  if(vx >= MID_VAL - NOISE_BAND && vx <= MID_VAL + NOISE_BAND){
+//    vx = MID_VAL;
+//  }
+//
+//  if(vy >= MID_VAL - NOISE_BAND && vy <= MID_VAL - NOISE_BAND){
+//    vy = MID_VAL;
+//  }
   Serial.print(previous_x);
   Serial.print(" ");
   Serial.print(previous_y);
