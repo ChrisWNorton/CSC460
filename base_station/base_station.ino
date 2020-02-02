@@ -1,4 +1,6 @@
  #include <LiquidCrystal.h>
+ #include "scheduler.h"
+ #include "arduino.h"
 
 int led = 13;           // the PWM pin the LED is attached to
 int pwm = 0;    // how bright the LED is
@@ -152,7 +154,7 @@ void loop() {
   adjust_laser(switch_clicked);
   print_to_lcd(vx, vy, photocell_value, switch_clicked);
   
-  delay(200);
+  delay(100);
   
   Serial.print("\n");
 
