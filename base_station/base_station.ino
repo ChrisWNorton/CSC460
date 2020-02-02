@@ -5,7 +5,9 @@ int fade_amount = 0;    // how many points to fade the LED by
 int analog_vy_pin = A1;
 int analog_vx_pin = A0;
 int switch_pin = 53;
+//One in Ground, one in digital PWM
 int laser_pin = 13;
+//One in ground, one in 5v
 int photocell_pin = A2;
 
 int vy = 0;
