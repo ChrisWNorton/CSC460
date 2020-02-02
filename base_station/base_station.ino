@@ -39,6 +39,7 @@ void sendData(int x, int y, bool switch_clicked){
   }else{
     Serial1.print(0);
   }  
+  Serial1.write('\n');
 }
 
 void adjust_laser(bool switch_clicked){
