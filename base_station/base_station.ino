@@ -5,6 +5,7 @@ int fade_amount = 0;    // how many points to fade the LED by
 int analog_vy_pin = A0;
 int analog_vx_pin = A1;
 int switch_pin = 53;
+int laser_pin = 13;
 
 int vy = 0;
 int vx = 0;
@@ -24,7 +25,7 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
   pinMode(LED_BUILTIN, OUTPUT);  
-  pinMode(led, OUTPUT);
+  pinMode(laser_pin, OUTPUT);
   
 }
 
@@ -38,7 +39,14 @@ void sendData(int x, int y, bool switch_clicked){
   }else{
     Serial1.print(0);
   }  
-    Serial1.write('\n');
+}
+
+void adjust_laser(bool switch_clicked){
+   if(switch_clicked){
+      analogWrite(laser_pin, 255);
+   }else{
+      analogWrite(laser_pin, 0);
+   }
 }
 
 int exponential(int current_value, int previous_value){
@@ -95,20 +103,9 @@ void loop() {
     num_switch_zeros = 0;
   }
   
-  analogWrite(led, pwm);
-
-  // scale fade amount base off of 0/520 ratio
-  fade_amount = (double(abs(vx - MID_VAL)) / double(MID_VAL)) * double(30);
-
-   // change the brightness for next time through the loop:
-  pwm += fade_amount;
-
-  // reverse the direction of the fading at the ends of the fade:
-  if (pwm <= 0 || pwm >= 255) {
-    fade_amount = -fade_amount;
-  }
-  
   sendData(vx, vy, switch_clicked);
+  adjust_laser(switch_clicked);
+  
   
   delay(30);
   
