@@ -5,7 +5,6 @@ int fade_amount = 0;    // how many points to fade the LED by
 int analog_vy_pin = A0;
 int analog_vx_pin = A1;
 int switch_pin = 53;
-int 
 
 int vy = 0;
 int vx = 0;
@@ -27,6 +26,19 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);  
   pinMode(led, OUTPUT);
   
+}
+
+void sendData(int x, int y, bool switch_clicked){
+  Serial1.print(x);
+  Serial1.write(',');
+  Serial1.print(y);
+  Serial1.write(',');
+  if(switch_clicked){
+    Serial1.print(1);
+  }else{
+    Serial1.print(0);
+  }  
+    Serial1.write('\n');
 }
 
 int exponential(int current_value, int previous_value){
@@ -73,19 +85,16 @@ void loop() {
     num_switch_zeros++;
   }else if(switch_value == 1){
     num_switch_zeros = 0;
+     switch_clicked = false;
+     Serial.print("Switch off");
   }
 
   if(num_switch_zeros == 6){
     Serial.print("Switch on");
+    switch_clicked = true;
     num_switch_zeros = 0;
   }
-//  if(switch_value == 0 && switch_clicked == false){
-//    Serial.print("SWITCH PRESSED");
-//    switch_clicked = true;
-//  }else if(switch_value != 0 && switch_clicked == true){
-//    switch_clicked = false;
-//  }
-
+  
   analogWrite(led, pwm);
 
   // scale fade amount base off of 0/520 ratio
@@ -98,8 +107,11 @@ void loop() {
   if (pwm <= 0 || pwm >= 255) {
     fade_amount = -fade_amount;
   }
-
+  
+  sendData(vx, vy, switch_clicked);
+  
   delay(30);
+  
   Serial.print("\n");
 
 }
