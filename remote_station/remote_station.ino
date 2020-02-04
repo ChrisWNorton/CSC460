@@ -35,10 +35,7 @@ int corrupt = 0;
 void read_bluetooth() {
   
   if (Serial1.available() > 0) {
-    // NEED TO READ LATESET VALUES
     int incomingByte = Serial1.available();
-//    Serial.print(incomingByte, DEC);
-//    Serial.print(" ");
     corrupt = 0;
     int j = 0;
 
@@ -56,7 +53,7 @@ void read_bluetooth() {
         parse_input(control, bluetooth_input);
         continue;
       }
-      if(corrupt != 1){
+      if(corrupt != 1 && j < BT_INPUT_SIZE + 1){
         bluetooth_input[j] = one;
         j++;
       }
@@ -107,7 +104,6 @@ void servo_task(){
   if(is_pos_inbound(pitch_pos, pitch_step)){
     pitch_pos += pitch_step;
   }
-
 
   rotate_servo.write(rotate_pos);
   pitch_servo.write(pitch_pos);
