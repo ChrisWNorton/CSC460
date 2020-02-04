@@ -15,9 +15,8 @@ int laser_pin = 13;
 int photocell_pin = A13;
 
 int vy = 0;
-
-
 int vx = 0;
+uint16_t idle_pin = 7;
 int previous_x = -1;
 int previous_y = -1;
 int switch_value = 0;
@@ -49,11 +48,16 @@ void setup() {
   pinMode(laser_pin, OUTPUT);
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
-  lcd.print("Hello world");
   Scheduler_Init();
+  Scheduler_StartTask(0,100,read_photocell_task);
+  Scheduler_StartTask(0,100,read_stick_down_task);
+  Scheduler_StartTask(0,100,read_stick_pos_task);
+  Scheduler_StartTask(0,50,send_data_task);
+  Scheduler_StartTask(0,100,print_to_lcd_task);
 }
 
 void sendData(int x, int y, bool switch_clicked){
+  Serial1.print('>');
   Serial1.print(x);
   Serial1.write(',');
   Serial1.print(y);
@@ -66,11 +70,8 @@ void sendData(int x, int y, bool switch_clicked){
   Serial1.write('\n');
 }
 
-int read_photo(){
-  return analogRead(photocell_pin);
-}
-
 void print_to_lcd(int x, int y, int photosensor, bool switch_clicked){
+  lcd.clear();
   lcd.setCursor(0,0);
   lcd.print("X:");
   lcd.print(x);
@@ -97,70 +98,78 @@ void adjust_laser(bool switch_clicked){
    }
 }
 
+//Photocell
+void read_photocell_task(){
+  photocell_value = analogRead(photocell_pin);
+  Serial.print("Photocell value: ");
+  Serial.write(photocell_value);
+  Serial.print('\n');
+}
+
+// idle task, from Neil's time triggered scheduling
+void idle(uint32_t idle_period)
+{
+  // this function can perform some low-priority task while the scheduler has nothing to run.
+  // It should return before the idle period (measured in ms) has expired.  For example, it
+  // could sleep or respond to I/O.
+ 
+  // example idle function that just pulses a pin.
+  digitalWrite(idle_pin, HIGH);
+  delay(idle_period);
+  digitalWrite(idle_pin, LOW);
+}
+
+//Stick
+void read_stick_down_task(){
+  switch_value = digitalRead(switch_pin);
+  
+  if(switch_value == 0){
+     num_switch_zeros++;
+  }else if(switch_value == 1){
+     num_switch_zeros = 0;
+     switch_clicked = false;
+     Serial.print("\nSwitch off\n");
+  }
+  if(num_switch_zeros >= 3){
+    Serial.print("\nSwitch on\n");
+    switch_clicked = true;
+    num_switch_zeros = 0;
+  }
+  Serial.print("\nSwitch value: ");
+  Serial.print(switch_value);
+  Serial.print("\n");
+
+}
+
+//Vx, vy
+void read_stick_pos_task() {
+  vy = analogRead(analog_vy_pin);
+  vx = analogRead(analog_vx_pin);
+  
+    Serial.write((char) vx);
+//  Serial.print(" ");
+//  Serial.print(vy);
+//  Serial.print('\n');
+}
+
+//Send data
+void send_data_task() {
+  sendData(vx, vy, switch_clicked);
+}
+
+void print_to_lcd_task(){
+  print_to_lcd(vx, vy, photocell_value, switch_clicked);
+}
+
 int exponential(int current_value, int previous_value){
   return (int)(alpha * (double)current_value) + ((1 - alpha) * (double)previous_value)  ;
 }
 
 void loop() {
-
-  vy = analogRead(analog_vy_pin);
-  vx = analogRead(analog_vx_pin);
-  switch_value = digitalRead(switch_pin);
-  photocell_value = analogRead(photocell_pin);
-
-//  Serial.print(previous_x);
-//  Serial.print(" ");
-//  Serial.print(vx);
-//  Serial.print(" ");
-
-//  if(previous_x != -1){
-//    vx = exponential(vx, previous_x);
-//    vy = exponential(vy, previous_y);
-//  }
-//
-//  if(vx >= MID_VAL - NOISE_BAND && vx <= MID_VAL + NOISE_BAND){
-//    vx = MID_VAL;
-//  }
-//
-//  if(vy >= MID_VAL - NOISE_BAND && vy <= MID_VAL - NOISE_BAND){
-//    vy = MID_VAL;
-//  }
-//  Serial.print(previous_x);
-//  Serial.print(" ");
-//  Serial.print(previous_y);
-//  Serial.print(" ");
-//  previous_x = vx;
-//  previous_y = vy;
-  
-  
-  Serial.print(vx);
-  Serial.print(" ");
-  Serial.print(vy);
-  Serial.print("Photocell value: ");
-  Serial.print(photocell_value);
-  
-  Serial.print("Switch value: ");
-  Serial.print(switch_value);
-  if(switch_value == 0){
-    num_switch_zeros++;
-  }else if(switch_value == 1){
-    num_switch_zeros = 0;
-     switch_clicked = false;
-     Serial.print("Switch off");
+  uint32_t idle_period = Scheduler_Dispatch();
+  if (idle_period)
+  {
+    idle(idle_period);
   }
-
-  if(num_switch_zeros == 6){
-    Serial.print("Switch on");
-    switch_clicked = true;
-    num_switch_zeros = 0;
-  }
-  
-  sendData(vx, vy, switch_clicked);
-  adjust_laser(switch_clicked);
-  print_to_lcd(vx, vy, photocell_value, switch_clicked);
-  
-  delay(100);
-  
-  Serial.print("\n");
 
 }
