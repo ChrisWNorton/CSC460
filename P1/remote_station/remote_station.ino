@@ -22,6 +22,10 @@ const int ROTATE_PIN = 8;
 const int PITCH_PIN = 9;
 const int BT_INPUT_SIZE = 11;
 
+const int DIGI_BLUET = 30;
+const int DIGI_SERVO = 31;
+const int DIGI_LASER = 32;
+
 
 // ------------------------------------------
 // Bluetooth
@@ -33,6 +37,7 @@ int i;
 char one;
 int corrupt = 0;
 void read_bluetooth() {
+  digitalWrite(DIGI_BLUET, LOW);
   
   if (Serial1.available() > 0) {
     int incomingByte = Serial1.available();
@@ -61,6 +66,7 @@ void read_bluetooth() {
   
  
   }
+  digitalWrite(DIGI_BLUET, HIGH);
 }
 
 void parse_input(int *output, char *bluetooth_input){
@@ -95,6 +101,7 @@ int rotate_pos = 60;
 int pitch_pos = 60;
 
 void servo_task(){
+  digitalWrite(DIGI_SERVO, LOW);
   rotate_step = joystick_to_step(control[0], X_CENTER);
   pitch_step = joystick_to_step(control[1], Y_CENTER);
 
@@ -107,6 +114,7 @@ void servo_task(){
 
   rotate_servo.write(rotate_pos);
   pitch_servo.write(pitch_pos);
+  digitalWrite(DIGI_SERVO, HIGH);
 }
 // return step of rotation
 int joystick_to_step(int input, int center) {
@@ -131,7 +139,9 @@ int is_pos_inbound(int pos, int mov_step) {
 // Laser
 
 void laser_task(){
+  digitalWrite(DIGI_LASER, LOW);
   adjust_laser(control[2]);
+  digitalWrite(DIGI_LASER, HIGH);
 }
 void adjust_laser(bool switch_clicked){
    if(switch_clicked){
@@ -148,6 +158,10 @@ void setup() {
   Serial.begin(9600);
   Serial1.begin(9600);
   pinMode(LASER_PIN, OUTPUT);
+  pinMode(DIGI_LASER, OUTPUT);
+  pinMode(DIGI_SERVO, OUTPUT);
+  pinMode(DIGI_BLUET, OUTPUT);
+  
   rotate_servo.attach(ROTATE_PIN);
   pitch_servo.attach(PITCH_PIN);
 
